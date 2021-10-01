@@ -259,8 +259,12 @@ function __cmd_duration -S -d 'Show command duration'
     [ "$CMD_DURATION" -lt 100 ]; and return
 
     if [ "$CMD_DURATION" -lt 5000 ]
+        # less than 5s -> white
+        set_color white
         echo -ns $CMD_DURATION 'ms'
     else if [ "$CMD_DURATION" -lt 60000 ]
+        # between 5s and 1minutes -> orange
+        set_color e69d6a
         printf "%s%s" (math --scale=1 $CMD_DURATION/1000 | sed 's/\\.0$//') 's'
     else if [ "$CMD_DURATION" -lt 3600000 ]
         set_color $fish_color_error
