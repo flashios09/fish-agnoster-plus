@@ -142,24 +142,36 @@ function prompt_left_arrow_segment -d "Function to draw a left arrow segment"
 end
 
 function prompt_status -d "the symbols for a non zero exit status, root and background jobs"
+    set -l right_segment_separator \uE0B2
+    set_color black
+    echo -n -e "$right_segment_separator"
+    set_color -b black white
+
     if [ $RETVAL -ne 0 ]
-        prompt_segment $color_status_nonzero_bg $color_status_nonzero_str "✘"
+        set_color -b $color_status_nonzero_bg $color_status_nonzero_str
+        echo -n -e " ✘ "
+    else
+        set_color -b black green
+        echo -n -e " ✔ "
     end
 
     if [ "$fish_private_mode" ]
-        prompt_segment $color_status_private_bg $color_status_private_str "🔒"
+        set_color -b $color_status_private_bg $color_status_private_str
+        echo -n -e "🔒"
     end
 
     # if superuser (uid == 0)
     set -l uid (id -u $USER)
 
     if [ $uid -eq 0 ]
-        prompt_segment $color_status_superuser_bg $color_status_superuser_str "⚡"
+        set_color -b $color_status_superuser_bg $color_status_superuser_str
+        echo -n -e "⚡"
     end
 
     # Jobs display
     if [ (jobs -l | wc -l) -gt 0 ]
-        prompt_segment $color_status_jobs_bg $color_status_jobs_str "⚙"
+        set_color -b $color_status_jobs_bg $color_color_status_jobs_str
+        echo -n -e "⚙"
     end
 end
 
@@ -343,9 +355,6 @@ function fish_prompt
     # draw the left arrow at the beginning of the firstline prompt
     set left_prompt (concat_segments $left_prompt (prompt_left_arrow_segment $left_arrow_segment_color))
 
-    # draw the exit command status
-    set left_prompt (concat_segments $left_prompt (prompt_status))
-
     # user@host
     set left_prompt (concat_segments $left_prompt (prompt_user))
 
@@ -365,10 +374,16 @@ function fish_prompt
     # date and time
     set right_prompt (concat_segments $right_prompt (set_color $fish_color_autosuggestion)(__timestamp)(set_color normal))
 
+    # draw the exit command status
+    set right_prompt (concat_segments $right_prompt (prompt_status))
+
     # vi mode
     if test "$fish_key_bindings" = "fish_vi_key_bindings"
-        set right_prompt (concat_segments $right_prompt (prompt_vi_mode)(set_color normal))
+        set right_prompt (concat_segments $right_prompt (prompt_vi_mode))
     end
+
+    # remove the background color after vi mode or prompt_status(if vi mode is disabled)
+    set right_prompt (concat_segments $right_prompt (set_color normal))
 
     # second line
     set bottom_prompt (set_color $color_tree_segment_separator)"╰─ "(set_color normal)
